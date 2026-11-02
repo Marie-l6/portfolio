@@ -370,13 +370,13 @@ footer.solid{padding:28px;font-family:var(--type);font-size:12px;color:var(--dim
   </div>
 </section>
 <section class="ui hidden" id="tip" aria-live="polite"><button class="x" id="tipClose">Close</button><h4>Get in touch</h4>
-  <p>liuyuyue73@gmail.com</p><p style="font-size:22px">Behance: Liu Yuyue</p>
+  <p>liuyuyue73@gmail.com</p>
   <div class="row"><button id="copyMail">Copy email</button><a href="mailto:liuyuyue73@gmail.com" target="_blank" rel="noopener">Open mail app</a></div>
   <p id="copied" style="font-size:22px;margin-top:10px;min-height:24px"></p></section>
 <section class="ui hidden" id="list" role="dialog" aria-modal="true" aria-label="All work">
   <div class="lwrap"><div class="lhead"><div><div class="lpre">The case files of</div><h2>Yuyue Liu</h2></div><button id="listClose">Close ✕</button></div>
   <div id="rows"></div>
-  <div class="lfoot"><span>liuyuyue73@gmail.com</span><span>Behance: Liu Yuyue</span></div></div></section>
+  <div class="lfoot"><span>liuyuyue73@gmail.com</span></div></div></section>
 <section class="ui hidden" id="dossier" role="dialog" aria-modal="true" aria-label="Case file"></section>
 <div class="ui hint hidden" id="hint">Scroll to move through the cases · Open the full file to read each one</div>
 
@@ -421,7 +421,7 @@ footer.solid{padding:28px;font-family:var(--type);font-size:12px;color:var(--dim
   <div class="eyebrow rv">Contact</div><h2 class="rv">Get in touch</h2>
   <p class="lead rv">I’m open to internships, collaborations, or just a good conversation about design. Drop me a line.</p>
   <a class="mail rv" href="mailto:liuyuyue73@gmail.com" target="_blank" rel="noopener">liuyuyue73@gmail.com</a>
-  <div class="row2 rv"><button id="copyMail2">Copy email</button><span id="copied2"></span><span>Behance: Liu Yuyue</span></div>
+  <div class="row2 rv"><button id="copyMail2">Copy email</button><span id="copied2"></span></div>
 </div></section>
 <footer class="solid">© 2026 Yuyue Liu</footer>
 </main>
@@ -573,7 +573,7 @@ CASES.forEach(c=>{
 // detective file in the middle
 const det=put(el('div','item note type',`<b>Detective file</b><br>Name: Yuyue Liu<br>Now: MFA Interaction Design, SVA, New York<br>Before: Digital Media Arts, Shanghai University<br>Into: music, dreams, nature, film, mysteries<br><br>Pattern noted: in every case,<br>someone is trapped, or someone is alone.`),1480,1120,470,-3,60);
 det.id='detective';det.innerHTML+='<div class="pin"></div>';wall.append(det);pins.detective=det;
-const ct=put(el('div','item note sticky','Contact<br><a href="mailto:liuyuyue73@gmail.com" target="_blank" rel="noopener">liuyuyue73@gmail.com</a><br>Behance: Liu Yuyue'),1640,1530,320,5,60);ct.id='contact';wall.append(ct);
+const ct=put(el('div','item note sticky','Contact<br><a href="mailto:liuyuyue73@gmail.com" target="_blank" rel="noopener">liuyuyue73@gmail.com</a>'),1640,1530,320,5,60);ct.id='contact';wall.append(ct);
 function circle(elm,pad,rot){requestAnimationFrame(()=>{const r=put(el('div','ring big'),elm.offsetLeft-pad,elm.offsetTop-pad*.8,elm.offsetWidth+pad*2,rot);r.style.height=(elm.offsetHeight+pad*1.6)+'px';wall.append(r)})}
 circle(det,70,-4);circle(ct,55,6);
 wall.append(put(el('div','scribble','WHO IS THIS?'),1540,1030,0,-6,47));
