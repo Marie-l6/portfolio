@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Yuyue Liu — Case Files</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Permanent+Marker&family=Special+Elite&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#e9e4d6; --dim:#9fb3ad; --panel:rgba(12,24,24,.8); --line:rgba(233,228,214,.22);
+  --red:#a8231b; --accent:#d96a2b; --paper:#e8e1cf; --sticky:#e9d77a;
+  --serif:'Cormorant Garamond',Georgia,serif; --marker:'Permanent Marker','Comic Sans MS',cursive;
+  --type:'Special Elite','Courier New',monospace; --hand:'Caveat','Bradley Hand','Segoe Print',cursive;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ink:#e9e4d6}}
+:root[data-theme="dark"]{--ink:#e9e4d6}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{background:#26322e;color:var(--ink);font-family:var(--serif)}
+body.lock{overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+#stage{position:fixed;inset:0;overflow:hidden}
+#stage.dragging{cursor:grabbing}
+#stage{background:radial-gradient(ellipse at 50% 45%,#3a4a44,#26322e 75%)}
+#wall{position:absolute;left:0;top:0;width:4100px;height:2850px;transform-origin:0 0;will-change:transform}
+.grade{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,.72) 100%),linear-gradient(rgba(20,70,60,.16),rgba(10,30,30,.22))}
+.grain{position:fixed;inset:-50%;pointer-events:none;opacity:.11;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:grain 1s steps(4) infinite;will-change:transform}
+@keyframes grain{0%{transform:translate(0,0)}25%{transform:translate(-3%,2%)}50%{transform:translate(2%,-3%)}75%{transform:translate(-2%,-1%)}}
+#strings{position:absolute;left:0;top:0;width:4100px;height:2850px;pointer-events:none;overflow:visible;z-index:50}
+#strings path{stroke:var(--red);stroke-width:3;fill:none;opacity:.92}
+#strings path.sh{stroke:rgba(0,0,0,.35);stroke-width:4;opacity:1}
+#strings text{fill:#f3e2cf;font-family:var(--hand);font-size:34px;font-weight:700}
+
+.item{position:absolute;box-shadow:0 8px 14px rgba(0,0,0,.5)}
+.photo{background:#f4efe3;padding:10px 10px 12px;cursor:zoom-in}
+.photo img{display:block;width:100%;height:auto;filter:saturate(.8) contrast(1.04);pointer-events:none}
+.photo figcaption{font-family:var(--hand);font-size:26px;color:#2b2722;line-height:1;padding:8px 2px 0}
+.photo.ref{background:#fbf8ef}
+.tape{position:absolute;width:110px;height:32px;background:rgba(230,220,186,.62);top:-15px;left:50%;transform:translateX(-50%) rotate(-4deg)}
+.pin{position:absolute;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ff6b5e,#8d140d);box-shadow:0 4px 5px rgba(0,0,0,.6);top:-4px;left:50%;transform:translateX(-50%);z-index:2}
+.note{color:#2a2620;padding:18px 20px;line-height:1.25}
+.note.type{background:var(--paper);font-family:var(--type);font-size:20px;line-height:1.5}
+.note.type b{font-weight:normal;text-decoration:underline}
+.note.sticky{background:var(--sticky);font-family:var(--hand);font-size:34px;font-weight:500}
+.note.hand{background:#f2ede0 repeating-linear-gradient(transparent 0 37px,rgba(70,110,160,.35) 37px 38px);font-family:var(--hand);font-size:32px;line-height:38px;padding:14px 18px}
+.note.scrap{background:#d9cfb6;font-family:var(--hand);font-size:30px;clip-path:polygon(0 4%,8% 0,30% 3%,60% 0,92% 4%,100% 0,98% 50%,100% 96%,70% 100%,40% 97%,10% 100%,0 95%)}
+.title-strip{position:absolute;z-index:26;font-family:var(--marker);color:#ece6d6;font-size:110px;line-height:1;white-space:nowrap;text-shadow:0 4px 0 rgba(0,0,0,.35)}
+.title-strip small{display:block;font-size:38px;color:#d8c9a8;margin-top:10px}
+.ref-head{position:absolute;font-family:var(--marker);color:#e8c9a0;font-size:46px;border-bottom:4px solid #e8c9a0;padding:0 6px;transform:rotate(-3deg)}
+.stamp{position:absolute;font-family:var(--marker);color:var(--red);border:5px solid var(--red);padding:4px 16px;font-size:44px;transform:rotate(-12deg);opacity:.85}
+.case{position:absolute;left:0;top:0;width:0;height:0;z-index:1}
+.case.active{z-index:46}
+.shade{position:absolute;background:rgba(12,20,18,.62);opacity:0;transition:opacity .7s;pointer-events:none;z-index:45;border-radius:40px}
+.shade.on{opacity:1}
+.scribble{position:absolute;font-family:var(--marker);color:#c0392b;font-size:64px;line-height:1;pointer-events:none;opacity:.9;white-space:nowrap}
+.stain{position:absolute;width:210px;height:210px;border-radius:50%;border:10px solid rgba(110,70,30,.28);box-shadow:inset 0 0 0 4px rgba(110,70,30,.12);pointer-events:none}
+.ring{position:absolute;border:5px solid #c0392b;border-radius:50%;pointer-events:none;opacity:.85}
+.ring.big{border-width:7px;opacity:.95;z-index:62}
+.ring.big::after{content:'';position:absolute;inset:-10px 6px 4px -8px;border:3px solid #c0392b;border-radius:50%;transform:rotate(4deg);opacity:.7}
+#detective,#contact{z-index:60!important}
+#contact a{color:inherit}
+.ltape{position:absolute;width:120px;height:34px;background:rgba(230,220,186,.55);pointer-events:none}
+.evtag{background:#f6f1e4;font-family:var(--type);font-size:18px;padding:8px 12px;color:#3a2f22;white-space:nowrap}
+
+/* UI */
+.ui{position:fixed;z-index:10;transition:opacity .6s}
+.hidden{opacity:0;pointer-events:none}
+.masthead{top:calc(22px + env(safe-area-inset-top,0px));left:28px;font-size:15px;color:var(--dim);letter-spacing:.06em}
+.masthead b{color:var(--ink);font-weight:600}
+#index{left:28px;top:84px;width:300px;background:var(--panel);border:1px solid var(--line);padding:22px 0 12px;backdrop-filter:blur(3px)}
+#index h2{margin:0 24px 2px;font-size:34px;font-weight:500}
+#index .sub{margin:0 24px 16px;font-size:14px;color:var(--dim);font-style:italic}
+.case-btn{display:grid;grid-template-columns:44px 1fr;width:100%;text-align:left;padding:12px 24px;border-top:1px solid var(--line);transition:background .3s}
+.case-btn .no{font-size:14px;color:var(--dim);padding-top:4px}
+.case-btn .en{font-size:21px;font-weight:600;display:block}
+.case-btn .alias{font-size:14px;color:var(--dim);font-style:italic}
+.case-btn[aria-current="true"]{background:rgba(217,106,43,.18);box-shadow:inset 3px 0 0 var(--accent)}
+.case-btn:hover{background:rgba(255,255,255,.05)}
+#overviewBtn{margin:10px 24px 0;font-size:14px;color:var(--dim);text-decoration:underline;text-underline-offset:3px}
+#card{right:28px;top:84px;width:340px;background:var(--panel);border:1px solid var(--line);padding:22px 24px}
+#card .kicker{font-size:14px;color:var(--dim);font-style:italic}
+#card h3{margin:4px 0 0;font-size:40px;line-height:1;font-weight:600}
+#card .alias{font-size:17px;color:var(--dim);font-style:italic;margin:8px 0 16px}
+#card dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0 0 16px;font-size:15px}
+#card dt{color:var(--dim)}#card dd{margin:0}
+#card p{font-size:17px;line-height:1.5;margin:0 0 18px;color:#dcd7c9}
+.open-btn{display:block;width:100%;background:var(--accent);color:#1a0f08;font-weight:600;padding:12px;font-size:17px}
+.open-btn:hover{background:#ec7c3b}
+#start{inset:0;display:flex;align-items:center;padding-left:8vw;background:linear-gradient(90deg,rgba(6,12,12,.95) 35%,rgba(6,12,12,.74))}
+#start .quick{display:inline-block;margin-top:22px;font-size:15px;color:var(--dim);font-style:italic;text-decoration:underline;text-underline-offset:4px}
+#start .quick:hover{color:var(--ink)}
+#start .wrap{max-width:480px}
+#start .who{font-size:15px;color:var(--dim);letter-spacing:.06em}
+#start .pre{font-size:clamp(18px,1.8vw,24px);font-style:italic;color:var(--dim)}
+#start h1{font-size:clamp(52px,7.4vw,96px);font-weight:500;margin:2px 0 10px;line-height:.95;white-space:nowrap}
+#start .who{margin-bottom:14px}
+#start .tag{color:var(--dim);margin:0 0 32px;font-size:19px;font-style:italic}
+.menu button{display:grid;grid-template-columns:36px 1fr;align-items:baseline;width:100%;text-align:left;padding:12px 0;border-top:1px solid var(--line);font-size:23px;transition:padding .25s}
+.menu button span:first-child{font-size:13px;color:var(--dim)}
+.menu button:hover,.menu button:focus-visible{color:#fff;padding-left:8px}
+#tip{right:28px;bottom:calc(56px + env(safe-area-inset-bottom,0px));width:340px;background:var(--sticky);color:#2a2620;padding:22px 24px;transform:rotate(-1.5deg);box-shadow:0 18px 40px rgba(0,0,0,.6)}
+#tip h4{font-family:var(--marker);font-size:30px;margin:0 0 8px}
+#tip p{font-family:var(--hand);font-size:28px;margin:0 0 6px;line-height:1.1;word-break:break-all}
+#tip .row{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+#tip .row button,#tip .row a{font-family:var(--type);font-size:15px;background:#2a2620;color:#f3ead0;padding:8px 12px;text-decoration:none}
+#tip .x{position:absolute;top:8px;right:12px;font-family:var(--type);font-size:14px;text-decoration:underline}
+#homeBtn,#listBtn{display:block;margin:6px 24px 0;font-size:14px;color:var(--dim);text-decoration:underline;text-underline-offset:3px}
+#dossier{inset:0;background:rgba(5,10,10,.88);display:flex;align-items:center;justify-content:center;flex-direction:column;padding:20px}
+#dossier .closeD{position:absolute;top:calc(18px + env(safe-area-inset-top,0px));right:26px;font-family:var(--type);font-size:16px;color:var(--ink);text-decoration:underline;text-underline-offset:4px;z-index:5}
+#dossier .bookhint{font-family:var(--type);font-size:14px;color:var(--dim);margin-top:18px;display:flex;gap:18px;align-items:center}
+#dossier .bookhint button{font-family:var(--type);font-size:14px;color:var(--ink);border:1px solid var(--line);padding:6px 12px}
+#dossier .bookhint button:disabled{opacity:.3;cursor:default}
+#dossier .bookhint button:focus-visible{outline:none}
+.book{--bh:min(78vh,calc(min(1280px,94vw)/1.99));--bw:calc(var(--bh)*1.99);width:var(--bw);height:var(--bh);position:relative;perspective:2600px;transition:transform .9s cubic-bezier(.3,.7,.2,1)}
+.book.closed{transform:translateX(-25%)}
+.book.ended{transform:translateX(25%)}
+.leaf{position:absolute;top:0;left:50%;width:50%;height:100%;transform-origin:left center;transform-style:preserve-3d;transition:transform 1s cubic-bezier(.45,.05,.25,1);cursor:pointer}
+.leaf.flipped{transform:rotateY(-180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}
+.face.back{transform:rotateY(180deg)}
+.leaf::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,.25),transparent 30%);opacity:0;transition:opacity 1s}
+.leaf.turning::after{opacity:1}
+/* paper */
+.page{background:#efe7d2;color:#2a2620;padding:6% 7%;box-shadow:inset 0 0 60px rgba(120,90,40,.18)}
+.face.front.page{box-shadow:inset 18px 0 30px -18px rgba(0,0,0,.35),inset 0 0 60px rgba(120,90,40,.18);border-radius:0 4px 4px 0}
+.face.back.page{box-shadow:inset -18px 0 30px -18px rgba(0,0,0,.35),inset 0 0 60px rgba(120,90,40,.18);border-radius:4px 0 0 4px}
+.page .pno{position:absolute;bottom:3.5%;font-family:var(--type);font-size:13px;color:#7a6c55}
+.front .pno{right:7%}.back .pno{left:7%}
+.page h5{font-family:var(--marker);font-size:clamp(22px,2.6vw,36px);margin:0 0 4px;font-weight:normal}
+.page .typed{font-family:var(--type);font-size:clamp(12px,1.15vw,16px);line-height:1.55}
+.page .typed dl,.inside .typed dl{display:grid;grid-template-columns:5.5em 1fr;gap:3px 10px;margin:0}.typed dt{color:#6b5a3e}.typed dd{margin:0}
+.page .typed p{margin:12px 0 0}
+.page .hand{font-family:var(--hand);font-size:clamp(20px,2vw,28px);line-height:1.05;color:#2b3a67}
+.shot{position:relative;background:#faf7ee;padding:8px 8px 6px;box-shadow:0 6px 14px rgba(0,0,0,.25);margin:0 auto}
+.shot img{display:block;width:100%;max-height:var(--mh,46%);object-fit:contain;background:#eee8d8}
+.shot figcaption{font-family:var(--hand);font-size:clamp(18px,1.7vw,24px);color:#2b2722;padding-top:4px}
+.shot .tp{position:absolute;width:30%;height:22px;background:rgba(225,214,178,.7);top:-10px;left:35%;transform:rotate(-3deg)}
+.clip{position:absolute;width:26px;height:70px;border:4px solid #8f9497;border-radius:13px;top:-24px;left:18%;z-index:3}
+.clip::after{content:'';position:absolute;left:4px;right:4px;top:10px;bottom:-4px;border:3px solid #8f9497;border-radius:10px;border-top:none}
+.stampx{position:absolute;font-family:var(--marker);color:#a8231b;border:4px solid #a8231b;padding:2px 12px;font-size:clamp(16px,1.8vw,26px);opacity:.75}
+.two{display:grid;grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:6%;height:88%}
+.two .shot{display:flex;flex-direction:column;width:92%;height:100%;min-height:0;justify-self:center}
+.two .shot img{flex:1;min-height:0;max-height:none;height:0}
+.one{height:86%;display:flex;flex-direction:column;justify-content:center;gap:4%}
+.one .shot img{max-height:56vh}
+/* folder */
+.inside{background:linear-gradient(135deg,#c4a364,#b18d4c);box-shadow:inset 0 0 50px rgba(80,50,10,.3);border-radius:6px 0 0 6px;padding:8%}
+.inside .typed{color:#3a2a14}
+.pdf{background:#f4efe3}
+.pdf .half{position:absolute;top:0;height:100%;width:200%;max-width:none;object-fit:contain;pointer-events:none;image-rendering:auto}
+.pdf.l .half{left:0}.pdf.r .half{left:-100%}
+.pdf::after{content:'';position:absolute;inset:0;pointer-events:none}
+.pdf::after{opacity:0;transition:opacity .25s}
+.leaf.turning .pdf::after{opacity:1;background:linear-gradient(90deg,rgba(0,0,0,.18),transparent 40%)}
+.face.l{border-radius:4px 0 0 4px}.face.r{border-radius:0 4px 4px 0}
+.book .leaf .face.pdf{box-shadow:none!important}
+.book:not(.closed):not(.ended)::before{content:'';position:absolute;inset:0;box-shadow:0 20px 50px rgba(0,0,0,.55);pointer-events:none}
+.pdf .half{backface-visibility:hidden}
+.book .leaf .face{box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.hint{right:28px;bottom:calc(20px + env(safe-area-inset-bottom,0px));font-size:13px;color:var(--dim)}
+@media (max-width:820px){
+  #index{left:12px;right:12px;width:auto;top:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));padding:8px 0 6px}
+  #index h2,#index .sub,.case-btn .alias{display:none}
+  .case-btn{padding:6px 16px}
+  #card{left:12px;right:12px;width:auto;top:56px;padding:14px 16px}
+  #card p,#card dl{display:none}
+  #card h3{font-size:28px}
+  .hint{display:none}
+}
+@media (prefers-reduced-motion:reduce){.grain{animation:none}}
+/* ---- case folder, matched to the wall: worn manila, film grade, taped paper ---- */
+.cover{background:#a99069;color:#2e2518;padding:0;border-radius:0 5px 5px 0;overflow:visible!important;
+  box-shadow:0 22px 44px rgba(0,0,0,.6)}
+.face.back.cover{border-radius:5px 0 0 5px}
+.cover .skin{position:absolute;inset:0;border-radius:inherit;overflow:hidden;
+  background:
+   radial-gradient(ellipse at 30% 25%,rgba(255,240,205,.22),transparent 55%),
+   radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(40,25,8,.45) 100%),
+   linear-gradient(160deg,#b39a70,#9c8358)}
+.cover .skin::before{content:'';position:absolute;inset:0;opacity:.35;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .25 0 0 0 0 .12 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.cover .skin::after{content:'';position:absolute;inset:0;background:linear-gradient(rgba(25,70,62,.16),rgba(10,35,32,.22));mix-blend-mode:multiply}
+.cover .crease{position:absolute;left:7%;top:0;bottom:0;width:2px;background:linear-gradient(transparent,rgba(60,40,15,.35) 15%,rgba(60,40,15,.35) 85%,transparent);box-shadow:2px 0 0 rgba(255,235,195,.12)}
+.cover .tab{position:absolute;top:-5.5%;right:10%;width:32%;height:7%;background:#a48b62;border-radius:8px 8px 0 0;
+  box-shadow:inset 0 3px 6px rgba(255,235,195,.15);display:flex;align-items:center;padding-left:6%;
+  font-family:var(--type);font-size:clamp(11px,1vw,14px);color:#3b2f1d;letter-spacing:.06em}
+.face.back.cover .tab{right:auto;left:10%}
+.cover .ring{position:absolute;width:30%;aspect-ratio:1;border-radius:50%;border:9px solid rgba(80,50,20,.22);border-width:7px 9px 10px 6px;opacity:1;left:58%;top:62%;transform:rotate(30deg)}
+.cover .form{position:absolute;left:12%;top:20%;width:58%;background:var(--paper);padding:6% 7% 7%;transform:rotate(-2.2deg);
+  box-shadow:0 8px 14px rgba(0,0,0,.45);font-family:var(--type);color:#2a2620;font-size:clamp(11px,1.05vw,14px)}
+.cover .form .hdr{border-bottom:2px solid #2a2620;padding-bottom:6px;margin-bottom:10px;letter-spacing:.08em}
+.cover .form .row{display:grid;grid-template-columns:5em 1fr;align-items:end;gap:8px;margin:9px 0}
+.cover .form .row span:last-child{border-bottom:1px solid rgba(42,38,32,.55);min-height:1.4em;padding-bottom:1px}
+.cover .form .t{font-family:var(--marker);font-size:clamp(24px,2.8vw,40px);line-height:1;color:#22201c}
+.cover .form .a{font-family:var(--hand);font-size:clamp(19px,1.9vw,27px);color:#2b3a67;line-height:1}
+.cover .tp{position:absolute;width:34%;height:12%;max-height:30px;background:rgba(230,220,186,.6);top:-5%;left:33%;transform:rotate(-4deg)}
+.cover .polaroid{position:absolute;right:9%;top:12%;width:30%;background:#f4efe3;padding:3% 3% 9%;transform:rotate(6deg);box-shadow:0 10px 18px rgba(0,0,0,.5)}
+.cover .polaroid img{display:block;width:100%;aspect-ratio:1;object-fit:cover;filter:saturate(.75) contrast(1.05)}
+.cover .polaroid .pin{top:-6px}
+.cover .cvstamp{position:absolute;left:14%;bottom:17%;font-family:var(--marker);color:#a8231b;border:4px solid #a8231b;padding:2px 14px;
+  font-size:clamp(18px,2.1vw,30px);transform:rotate(-9deg);opacity:.8;letter-spacing:.04em;
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.2 1.7'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.2 1.7'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.cover .flag{position:absolute;right:-6%;bottom:12%;background:var(--sticky);padding:2.2% 5% 2.2% 4%;font-family:var(--hand);font-size:clamp(20px,2vw,28px);color:#2a2620;
+  transform:rotate(-3deg);box-shadow:0 6px 10px rgba(0,0,0,.4)}
+.face.back.cover .flag{right:auto;left:-6%}
+.cover .scrawl{position:absolute;font-family:var(--marker);color:#7d1c15;opacity:.75;font-size:clamp(18px,2vw,28px)}
+/* ---- pull-out dossier ---- */
+#dossier{display:block!important;padding:0}
+#dossier .closeD{z-index:500}
+#dossier .bookhint{position:absolute;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:500;margin:0;
+  background:rgba(8,16,15,.75);padding:6px 10px;border:1px solid var(--line);white-space:nowrap}
+#desk{position:absolute;inset:0;overflow:hidden}
+.fold{position:absolute;left:0;top:0;transform-origin:0 0;border-radius:5px;cursor:pointer;will-change:transform}
+.fold.cover{border-radius:5px}
+.fold-back .skin{filter:brightness(.78)}
+.fold-back .tab{right:10%}
+.fold-front .flag{transition:opacity .4s}
+.fold-front .cvstamp{bottom:7%;left:9%}
+.fold-front .form{top:17%;width:60%}
+body:has(#dossier:not(.hidden)) #hint{opacity:0}
+.fold.opened .flag{opacity:0}
+.sheet{position:absolute;left:0;top:0;transform-origin:50% 50%;cursor:pointer;will-change:transform;
+  box-shadow:0 2px 0 rgba(255,255,255,.25) inset,0 18px 40px rgba(0,0,0,.6);border-radius:2px}
+.sheet img{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none}
+.sheet::after{content:'';position:absolute;inset:0;background:rgba(6,14,13,.55);opacity:0;transition:opacity .5s;pointer-events:none}
+.sheet.piled::after{opacity:1}
+.sheet .ex{position:absolute;left:-14px;top:-12px;background:#f6f1e4;color:#3a2f22;font-family:var(--type);font-size:13px;padding:5px 9px;
+  transform:rotate(-4deg);box-shadow:0 4px 8px rgba(0,0,0,.35);white-space:nowrap}
+.sheet .clipx{position:absolute;right:7%;top:-16px;width:20px;height:54px;border:3px solid #9aa0a3;border-radius:10px;z-index:2}
+.sheet .clipx::after{content:'';position:absolute;left:3px;right:3px;top:8px;bottom:-3px;border:2px solid #9aa0a3;border-radius:8px;border-top:none}
+
+/* dossier controls: minimal */
+#dossier .bookhint{background:none;border:none;box-shadow:none;padding:0;gap:22px;display:flex;align-items:center;transform:translateX(-50%);
+  font-family:var(--type);top:calc(20px + env(safe-area-inset-top,0px))}
+#dossier .bookhint button{font-family:var(--type);font-size:13px;letter-spacing:.04em;color:var(--dim);border:none;background:none;padding:4px 0;text-decoration:none;transition:color .2s}
+#dossier .bookhint button:hover:not(:disabled),#dossier .bookhint button:focus-visible{color:var(--ink)}
+#dossier .bookhint button:disabled{opacity:.25;cursor:default}
+#dossier .bookhint button:focus-visible{outline:none;text-decoration:underline;text-underline-offset:4px}
+#dossier #pinfo{font-family:var(--type);color:var(--ink);font-size:13px;letter-spacing:.08em;min-width:5em;text-align:center}
+#dossier .closeD{background:none;box-shadow:none;transform:none;padding:4px 0;font-family:var(--type);font-size:13px;letter-spacing:.04em;color:var(--dim);
+  text-decoration:none;top:calc(20px + env(safe-area-inset-top,0px));right:26px}
+#dossier .closeD:hover{color:var(--ink)}
+@media (max-width:820px){#dossier .bookhint{gap:14px}#dossier .closeD{top:auto;bottom:calc(10px + env(safe-area-inset-bottom,0px));right:14px}}
+
+#list{inset:0;background:rgba(9,15,14,.97);overflow:auto;z-index:11}
+#list .lwrap{max-width:980px;margin:0 auto;padding:64px 28px 48px}
+#list .lhead{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:8px}
+#list .lpre{font-style:italic;color:var(--dim);font-size:18px}
+#list h2{font-size:clamp(40px,5vw,60px);font-weight:500;margin:2px 0 0;line-height:1}
+#list #listClose{font-family:var(--type);font-size:13px;color:var(--dim)}
+#list #listClose:hover{color:var(--ink)}
+.lrow{display:grid;grid-template-columns:220px 1fr auto;gap:28px;align-items:center;width:100%;text-align:left;padding:22px 0;border-bottom:1px solid var(--line);transition:background .25s}
+.lrow:hover,.lrow:focus-visible{background:rgba(255,255,255,.035)}
+.lrow img{width:220px;aspect-ratio:16/10;object-fit:cover;display:block;filter:saturate(.85)}
+.lrow .no{font-family:var(--type);font-size:13px;color:var(--dim)}
+.lrow .nm{font-size:34px;font-weight:600;line-height:1.05;margin:4px 0 2px}
+.lrow .al{font-style:italic;color:var(--dim);font-size:17px}
+.lrow .ds{font-size:16px;color:#cfcabd;margin-top:10px;max-width:46ch;line-height:1.45}
+.lrow .meta{font-family:var(--type);font-size:13px;color:var(--dim);text-align:right;line-height:1.7;white-space:nowrap}
+.lrow .meta b{display:block;color:var(--ink);font-weight:normal;margin-top:8px}
+#list .lfoot{display:flex;gap:28px;flex-wrap:wrap;margin-top:28px;font-family:var(--type);font-size:13px;color:var(--dim)}
+@media (max-width:720px){.lrow{grid-template-columns:1fr;gap:12px}.lrow img{width:100%}.lrow .meta{text-align:left}#list .lwrap{padding:40px 16px}}
+#dossier{z-index:12}
+
+/* ---------- long scrolling page ---------- */
+#start{display:none!important}
+#overviewBtn{display:none}
+#page{position:relative;z-index:5}
+#page section{position:relative}
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:0 8vw;box-sizing:border-box;
+  background:linear-gradient(90deg,rgba(6,12,12,.95) 35%,rgba(6,12,12,.6))}
+.hero .pre{font-size:clamp(17px,1.6vw,21px);font-style:italic;color:var(--dim);margin-bottom:6px}
+.hero h1{font-size:clamp(52px,7vw,100px);font-weight:500;margin:0;line-height:1.08;padding-bottom:.12em}
+.hero .who{font-size:14px;color:var(--dim);letter-spacing:.12em;text-transform:none;margin:22px 0 0;padding-top:22px;border-top:1px solid var(--line);max-width:520px}
+.hero .tag{color:#cfcabd;margin:12px 0 0;font-size:19px;line-height:1.5;font-style:italic;max-width:40ch}
+.hero nav{display:flex;gap:34px;flex-wrap:wrap;margin-top:48px}
+.hero nav a{color:var(--ink);text-decoration:none;font-size:18px;border-bottom:1px solid var(--line);padding-bottom:4px}
+.hero nav a:hover{border-color:var(--ink)}
+.cue{position:absolute;left:8vw;bottom:calc(28px + env(safe-area-inset-bottom,0px));font-family:var(--type);font-size:13px;color:var(--dim);letter-spacing:.06em}
+.cue span{display:inline-block;animation:bob 1.8s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(5px)}}
+#work{pointer-events:none}
+.solid{background:#0e1615;border-top:1px solid var(--line)}
+.wrap2{max-width:980px;margin:0 auto;padding:96px 28px}
+.eyebrow{font-family:var(--type);font-size:13px;color:var(--dim);letter-spacing:.06em;margin-bottom:10px}
+.solid h2{font-size:clamp(36px,4.4vw,56px);font-weight:500;margin:0 0 28px;line-height:1.05}
+#allrows .lrow:first-child{border-top:1px solid var(--line)}
+.about{display:grid;grid-template-columns:1fr 1.3fr;gap:56px;align-items:start}
+.about p{font-size:20px;line-height:1.6;margin:0 0 18px;color:#d9d4c6}
+.about .facts{font-family:var(--type);font-size:14px;line-height:1.9;color:var(--dim);border-top:1px solid var(--line);padding-top:18px}
+.about .facts b{color:var(--ink);font-weight:normal}
+.contact .lead{font-size:20px;line-height:1.55;color:#d9d4c6;margin:-10px 0 30px;max-width:44ch}
+.contact .mail{font-size:clamp(28px,4vw,52px);color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line);word-break:break-all}
+.contact .mail:hover{border-color:var(--ink)}
+.contact .row2{display:flex;gap:22px;align-items:center;margin-top:24px;font-family:var(--type);font-size:14px;color:var(--dim);flex-wrap:wrap}
+.contact button{font-family:var(--type);font-size:14px;color:var(--ink);border:1px solid var(--line);padding:8px 14px}
+.contact button:hover{border-color:var(--ink)}
+footer.solid{padding:28px;font-family:var(--type);font-size:12px;color:var(--dim);text-align:center}
+@media (max-width:820px){.about{grid-template-columns:1fr;gap:20px}.wrap2{padding:64px 18px}.hero{padding:0 18px}.cue{left:18px}}
+@media (prefers-reduced-motion:reduce){.cue span{animation:none}}
+
+/* ---------- reveal animations ---------- */
+.rv{opacity:0;transform:translateY(26px);filter:blur(4px);transition:opacity .9s ease,transform 1s cubic-bezier(.2,.7,.2,1),filter .9s ease}
+.rv.in{opacity:1;transform:none;filter:none}
+#chapter{left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;pointer-events:none;opacity:0;transition:opacity .8s ease}
+#chapter.on{opacity:1}
+#chapter .c1{display:inline-block;font-size:clamp(48px,7vw,104px);font-weight:500;line-height:1;padding:18px 44px 10px;
+  background:radial-gradient(ellipse at center,rgba(8,14,13,.82),rgba(8,14,13,.55) 60%,transparent 75%);
+  letter-spacing:.14em;transition:letter-spacing 1.4s cubic-bezier(.2,.7,.2,1)}
+#chapter.on .c1{letter-spacing:.02em}
+#chapter .c2{font-family:var(--type);font-size:14px;color:var(--ink);letter-spacing:.06em;margin-top:14px;opacity:0;transform:translateY(10px);transition:opacity .8s ease .5s,transform .8s ease .5s;
+  text-shadow:0 2px 10px rgba(0,0,0,.9)}
+#chapter.on .c2{opacity:.85;transform:none}
+#card>*{animation:cardIn .7s cubic-bezier(.2,.7,.2,1) both}
+#card>*:nth-child(2){animation-delay:.06s}#card>*:nth-child(3){animation-delay:.12s}#card>*:nth-child(4){animation-delay:.18s}#card>*:nth-child(5){animation-delay:.26s}#card>*:nth-child(6){animation-delay:.34s}
+@keyframes cardIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;filter:none;transition:none}#card>*{animation:none}#chapter .c1,#chapter .c2{transition:none}}
+
+#games .lead{font-size:20px;line-height:1.55;color:#d9d4c6;margin:-10px 0 36px;max-width:48ch}
+.games{display:grid;grid-template-columns:1fr 1fr;gap:40px}
+.game .shot2{display:block;overflow:hidden;border:1px solid var(--line)}
+.game .shot2 img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.game .shot2:hover img{transform:scale(1.03)}
+.game h3{font-size:30px;font-weight:600;margin:20px 0 6px}
+.game p{font-size:17px;line-height:1.5;color:#cfcabd;margin:0 0 14px}
+.game .tags{list-style:none;padding:0;margin:0 0 18px;display:flex;flex-wrap:wrap;gap:8px}
+.game .tags li{font-family:var(--type);font-size:12px;color:var(--dim);border:1px solid var(--line);padding:4px 9px}
+.game{display:flex;flex-direction:column}
+.game .links{display:flex;align-items:baseline;gap:24px;font-family:var(--type);font-size:14px;line-height:1.4;margin-top:auto}
+.game .links .ar{font-family:Arial,Helvetica,sans-serif;font-size:12px;margin-left:4px;display:inline-block;transform:translateY(-1px)}
+.game .links a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line);padding-bottom:2px}
+.game .links a:hover{border-color:var(--ink)}
+@media (max-width:820px){.games{grid-template-columns:1fr;gap:48px}}
+</style>
+</head>
+<body>
+<div id="stage"><div id="wall"><svg id="strings" viewBox="0 0 4100 2850"></svg></div></div>
+<div class="grade"></div><div class="grain"></div>
+
+<div class="ui masthead hidden" id="mast"><b>YUYUE LIU</b> &nbsp;/&nbsp; Case files 2024–2026</div>
+<nav class="ui hidden" id="index" aria-label="Case index">
+  <h2>File Index</h2><p class="sub">Select a case to investigate</p>
+  <div id="caseList"></div>
+  <button id="overviewBtn">Step back from the wall</button>
+  <button id="homeBtn">Back to the desk</button>
+  <button id="listBtn">List view</button>
+</nav>
+<aside class="ui hidden" id="card" aria-live="polite"></aside>
+<section class="ui" id="start">
+  <div class="wrap">
+    <div class="pre">The case files of</div>
+    <h1>Yuyue Liu</h1>
+    <div class="who">Interaction designer, New York</div>
+    <p class="tag">Four open cases. Every one of them is about the human mind.</p>
+    <div class="menu">
+      <button id="goCases"><span>I</span><span>Take a case</span></button>
+      <button id="goWall"><span>II</span><span>Survey the wall</span></button>
+      <button id="goAbout"><span>III</span><span>Meet the detective</span></button>
+    </div>
+    <button class="quick" id="goList">Just show me the work</button>
+  </div>
+</section>
+<section class="ui hidden" id="tip" aria-live="polite"><button class="x" id="tipClose">Close</button><h4>Get in touch</h4>
+  <p>liuyuyue73@gmail.com</p><p style="font-size:22px">Behance: Liu Yuyue</p>
+  <div class="row"><button id="copyMail">Copy email</button><a href="mailto:liuyuyue73@gmail.com" target="_blank" rel="noopener">Open mail app</a></div>
+  <p id="copied" style="font-size:22px;margin-top:10px;min-height:24px"></p></section>
+<section class="ui hidden" id="list" role="dialog" aria-modal="true" aria-label="All work">
+  <div class="lwrap"><div class="lhead"><div><div class="lpre">The case files of</div><h2>Yuyue Liu</h2></div><button id="listClose">Close ✕</button></div>
+  <div id="rows"></div>
+  <div class="lfoot"><span>liuyuyue73@gmail.com</span><span>Behance: Liu Yuyue</span></div></div></section>
+<section class="ui hidden" id="dossier" role="dialog" aria-modal="true" aria-label="Case file"></section>
+<div class="ui hint hidden" id="hint">Scroll to move through the cases · Open the full file to read each one</div>
+
+<div class="ui" id="chapter" aria-hidden="true"><div class="c1">Case files</div><div class="c2">Four cases, one pattern. Scroll to investigate.</div></div>
+<main id="page">
+<section class="hero" id="top">
+  <div class="pre rv">The case files of</div>
+  <h1 class="rv">Yuyue Liu</h1>
+  <div class="who rv">Interaction designer, New York</div>
+  <p class="tag rv">Four open cases. Every one of them is about the human mind.</p>
+  <nav class="rv" aria-label="Sections"><a href="#work" data-go="work">The cases</a><a href="#games" data-go="games">Games</a><a href="#about" data-go="about">About</a><a href="#contact" data-go="contact">Contact</a></nav>
+  <div class="cue rv">Scroll to open the cases <span>↓</span></div>
+</section>
+<section id="work" aria-label="The cases"></section>
+<section class="solid" id="games"><div class="wrap2">
+  <div class="eyebrow rv">Side projects</div><h2 class="rv">Recent games</h2>
+  <p class="lead rv">Small browser games I make for fun. They run right in your browser, no download needed.</p>
+  <div class="games">
+    <article class="game rv">
+      <a class="shot2" href="https://marie-6.github.io/fun-games/off-the-table/" target="_blank" rel="noopener"><img src="img/game_ott.jpg" alt="Off The Table: a cat's paw reaching across a table in a dark blue room" loading="lazy"></a>
+      <h3>Off The Table</h3>
+      <p>You are a cat. Knock the humans’ nice things off the table, but freeze before anyone opens the door.</p>
+      <ul class="tags"><li>Mouse</li><li>Phone as controller</li><li>Webcam hand tracking</li></ul>
+      <div class="links"><a href="https://marie-6.github.io/fun-games/off-the-table/" target="_blank" rel="noopener">Play the game<span class="ar" aria-hidden="true">↗</span></a><a href="https://github.com/Marie-6/fun-games/tree/main/off-the-table" target="_blank" rel="noopener">Code</a></div>
+    </article>
+    <article class="game rv">
+      <a class="shot2" href="https://marie-6.github.io/fun-games/pigeons-in-new-york/" target="_blank" rel="noopener"><img src="img/game_pigeons.jpg" alt="Pigeons in New York: a pigeon crossing streets full of taxis and buses, seen from above" loading="lazy"></a>
+      <h3>Pigeons in New York</h3>
+      <p>You are a city pigeon. Cross New York’s streets, from Midtown to Coney Island, without getting squashed by taxis, buses or people.</p>
+      <ul class="tags"><li>One button</li><li>Space or tap</li><li>12 neighborhoods</li></ul>
+      <div class="links"><a href="https://marie-6.github.io/fun-games/pigeons-in-new-york/" target="_blank" rel="noopener">Play the game<span class="ar" aria-hidden="true">↗</span></a><a href="https://github.com/Marie-6/fun-games/tree/main/pigeons-in-new-york" target="_blank" rel="noopener">Code</a></div>
+    </article>
+  </div>
+</div></section>
+<section class="solid" id="about"><div class="wrap2 about">
+  <div><h2 class="rv">About me</h2></div>
+  <div><p class="rv">I’m Yuyue Liu, but you can call me Marie. I’m an interaction designer working across digital products, physical prototypes and interactive storytelling. My process is research-led: I start from how people actually feel and behave, then turn those insights into experiences that are clear, useful and emotionally resonant.</p>
+  <p class="rv">I’m currently pursuing an MFA in Interaction Design at the School of Visual Arts in New York.</p>
+  <div class="facts rv"><b>Focus</b> · Interaction design, UX research, prototyping, 3D and real-time media<br><b>Tools</b> · Figma, Blender, Unreal Engine, Arduino / ESP32, Python<br><b>Languages</b> · English, Mandarin Chinese</div></div>
+</div></section>
+<section class="solid contact" id="contact"><div class="wrap2">
+  <div class="eyebrow rv">Contact</div><h2 class="rv">Get in touch</h2>
+  <p class="lead rv">I’m open to internships, collaborations, or just a good conversation about design. Drop me a line.</p>
+  <a class="mail rv" href="mailto:liuyuyue73@gmail.com" target="_blank" rel="noopener">liuyuyue73@gmail.com</a>
+  <div class="row2 rv"><button id="copyMail2">Copy email</button><span id="copied2"></span><span>Behance: Liu Yuyue</span></div>
+</div></section>
+<footer class="solid">© 2026 Yuyue Liu</footer>
+</main>
+<script>
+const IMG = {"paw_products": "img/paw_products.jpg", "last_ue": "img/last_ue.jpg", "soft_board": "img/soft_board.jpg", "paw_dataset": "img/paw_dataset.jpg", "soft_lofi": "img/soft_lofi.jpg", "paw_hero": "img/paw_hero.jpg", "soft_timeline": "img/soft_timeline.jpg", "paw_brand": "img/paw_brand.jpg", "paw_vet": "img/paw_vet.jpg", "paw_doctor": "img/paw_doctor.jpg", "paw_space": "img/paw_space.jpg", "last_rdr": "img/last_rdr.jpg", "paw_poster": "img/paw_poster.jpg", "last_chars": "img/last_chars.jpg", "last_g3": "img/last_g3.jpg", "paw_ia": "img/paw_ia.jpg", "paw_hist": "img/paw_hist.jpg", "dream_board": "img/dream_board.jpg", "dream_inception": "img/dream_inception.jpg", "last_mind": "img/last_mind.jpg", "last_g4": "img/last_g4.jpg", "paw_family": "img/paw_family.jpg", "last_mood": "img/last_mood.jpg", "last_hero": "img/last_hero.jpg", "last_g1": "img/last_g1.jpg", "dream_twist": "img/dream_twist.jpg", "soft_story": "img/soft_story.jpg", "last_wd": "img/last_wd.jpg", "last_hateful": "img/last_hateful.jpg", "dream_research": "img/dream_research.jpg", "paw_wire": "img/paw_wire.jpg", "dream_hero": "img/dream_hero.jpg", "paw_survey": "img/paw_survey.jpg", "soft_ui": "img/soft_ui.jpg", "dream_spiral": "img/dream_spiral.jpg", "soft_poses": "img/soft_poses.jpg", "paw_persona": "img/paw_persona.jpg", "dream_room": "img/dream_room.jpg", "last_story": "img/last_story.jpg", "dream_keys": "img/dream_keys.jpg", "soft_hero": "img/soft_hero.jpg", "dream_corridor": "img/dream_corridor.jpg", "soft_animism": "img/soft_animism.jpg", "last_g2": "img/last_g2.jpg", "soft_klara": "img/soft_klara.jpg", "last_django": "img/last_django.jpg", "dream_paprika": "img/dream_paprika.jpg", "soft_case": "img/soft_case.jpg", "paw_ai": "img/paw_ai.jpg", "pg01": "img/pg01.webp", "pg02": "img/pg02.webp", "pg03": "img/pg03.webp", "pg04": "img/pg04.webp", "pg05": "img/pg05.webp", "pg06": "img/pg06.webp", "pg07": "img/pg07.webp", "pg08": "img/pg08.webp", "pg09": "img/pg09.webp", "pg10": "img/pg10.webp", "pg11": "img/pg11.webp", "pg12": "img/pg12.webp", "pg13": "img/pg13.webp", "pg14": "img/pg14.webp", "pg15": "img/pg15.webp", "pg16": "img/pg16.webp", "pg17": "img/pg17.webp", "pg18": "img/pg18.webp", "pg19": "img/pg19.webp", "pg20": "img/pg20.webp", "pg21": "img/pg21.webp", "pg22": "img/pg22.webp", "pg23": "img/pg23.webp", "pg24": "img/pg24.webp", "pg25": "img/pg25.webp", "pg26": "img/pg26.webp", "pg27": "img/pg27.webp", "pg28": "img/pg28.webp", "pg29": "img/pg29.webp", "pg30": "img/pg30.webp", "pg31": "img/pg31.webp"};
+const W=4100,H=2850;
+const CASES=[
+ {id:'paw',no:'#01',en:'PawSkin',alias:'The Itch Under the Fur',kicker:'Case 01 · AI pet healthcare',ox:100,oy:100,
+  date:'Dec 2024 – Mar 2025',role:'UI/UX, space design',tools:'Figma, Photoshop, Azure Custom Vision, SketchUp',
+  text:'Skin disease is one of the most common health problems for city dogs, and owners usually notice too late. PawSkin lets owners snap a photo for AI screening, then connects them to care advice, nearby vets, and treatment reminders. The system extends offline into a pet clinic space.',
+  items:[
+   ['t','PAWSKIN','#01 · the itch under the fur',30,10],
+   ['n','type','<b>Case summary</b><br>Victim: dogs with skin disease.<br>Problem: owners notice too late.<br>Tool: an AI that looks closer.',780,10,400,2],
+   ['p','paw_hero',30,190,460,-2,'','pin'],
+   ['p','paw_ai',520,240,330,3,'AI scan screen','tape'],
+   ['p','paw_wire',890,250,210,-3,'','pin'],
+   ['p','paw_vet',1150,270,200,4,'clinic exam room','tape'],
+   ['p','paw_doctor',30,690,560,1,'online vet, map, store','pin'],
+   ['p','paw_persona',630,620,300,2,'','pin'],
+   ['p','paw_ia',960,640,250,3,'','tape'],
+   ['p','paw_survey',30,950,380,-1,'','pin'],
+   ['p','paw_space',440,1090,440,2,'clinic floor plan','tape'],
+   ['p','paw_brand',940,1080,330,-2,'','pin'],
+   ['p','paw_poster',1050,460,290,-3,'','tape'],
+   ['h','REFERENCES',1420,440],
+   ['p','paw_hist',1390,520,320,-3,'helpers → healers','pin','ref'],
+   ['p','paw_family',1730,540,210,4,'dogs = family','tape','ref'],
+   ['p','paw_products',1420,800,300,2,'smart pet products','pin','ref'],
+   ['p','paw_dataset',1400,1040,330,-2,'training data','tape','ref'],
+   ['n','sticky','Snap a photo.<br>AI flags it in seconds.',380,560,230,5],
+   ['n','hand','61% of dogs get skin<br>disease. Most owners<br>wait too long.',1180,860,260,-4],
+   ['n','scrap','2 owners interviewed:<br>busy, guilty, no time',700,960,250,-3],
+   ['n','sticky','Azure model trained<br>on dog skin photos',1760,950,220,4]
+  ]},
+ {id:'dream',no:'#02',en:'The Dream',alias:'The Elevator Loop',kicker:'Case 02 · 3D animation',ox:2030,oy:170,
+  date:'Jun 2025 – Sep 2025',role:'Director, 3D artist',tools:'Blender, Premiere, Photoshop, Procreate, Suno',
+  text:'Elevator, hallway, another elevator. A short film about a dream that repeats in a fixed sequence. The protagonist keeps waking up, only to find herself back at the start, drifting between reality and illusion.',
+  items:[
+   ['t','THE DREAM','#02 · same elevator, every night',30,10],
+   ['n','type','<b>Case summary</b><br>Subject keeps waking up.<br>Subject never gets out.<br>Last seen: in the elevator.',800,10,400,-2],
+   ['p','dream_hero',30,190,640,1,'','pin'],
+   ['p','dream_room',720,250,400,-3,'the living room','tape'],
+   ['p','dream_spiral',1150,260,260,4,'','pin'],
+   ['p','dream_twist',30,480,250,-2,'twisted corridor','tape'],
+   ['p','dream_board',310,490,440,2,'storyboard','pin'],
+   ['p','dream_corridor',790,480,420,-1,'','pin'],
+   ['p','dream_research',800,640,420,2,'dream survey','tape'],
+   ['p','dream_keys',30,900,740,-1,'keyframes: start → level 1 → level 2 → awake → loop','pin'],
+   ['h','REFERENCES',1420,440],
+   ['p','dream_inception',1390,520,300,-3,'Inception','pin','ref'],
+   ['p','dream_paprika',1720,500,220,4,'Paprika + collage','tape','ref'],
+   ['n','sticky','Elevator → hallway<br>→ elevator.<br>It never ends.',580,410,230,5],
+   ['n','hand','I write my dreams<br>down the moment<br>I wake up.',1260,900,260,-3],
+   ['n','scrap','67.9% of dreams<br>felt negative',860,960,230,3],
+   ['n','sticky','Dreams can be built,<br>nested, looped.',1420,770,250,-4],
+   ['n','type','Interviewed 3 dreamers.<br>Common themes: falling,<br>being chased, teeth.',130,1080,360,2]
+  ]},
+ {id:'soft',no:'#03',en:'SoftMate',alias:'The Midnight Companion',kicker:'Case 03 · AI companion',ox:180,oy:1360,
+  date:'Jul 2025 – Sep 2025',role:'Product design, UI/UX, hardware prototype',tools:'Figma, Photoshop, Procreate, ESP32, LLM',
+  text:'Loneliness hits hardest at night. SoftMate is a gentle AI plush companion that users can customize in look and personality. It tilts its head, bristles its tail, and guides you through a breath, with an app and a physical toy working together.',
+  items:[
+   ['t','SOFTMATE','#03 · who keeps you up at night',30,10],
+   ['n','type','<b>Case summary</b><br>Witness: a young adult, 2 a.m.<br>Complaint: no one to talk to.<br>Lead: a squirrel that listens.',820,10,410,2],
+   ['p','soft_hero',30,190,320,-3,'','pin'],
+   ['p','soft_story',380,200,440,2,'storyboard','tape'],
+   ['p','soft_ui',870,260,500,-1,'app screens','pin'],
+   ['p','soft_lofi',880,520,290,3,'low fidelity','tape'],
+   ['p','soft_poses',30,660,360,1,'poses','pin'],
+   ['p','soft_board',30,860,340,-3,'ESP32 prototype','tape'],
+   ['p','soft_timeline',420,800,400,-2,'AI: tool → partner → companion','pin'],
+   ['h','REFERENCES',1420,440],
+   ['p','soft_klara',1390,520,180,-3,'Klara and the Sun / Robot Dreams','pin','ref'],
+   ['p','soft_case',1610,530,300,3,'LOVOT, Sophia','tape','ref'],
+   ['p','soft_animism',1590,900,320,-2,'animism','pin','ref'],
+   ['n','sticky','Loneliness peaks<br>late at night.',300,600,220,5],
+   ['n','hand','“It listens better<br>than most people.”<br>— test user',1170,880,280,-3],
+   ['n','sticky','Ears tilt 20°<br>when curious',430,1090,200,-4],
+   ['n','scrap','mic → ASR → LLM → TTS<br>→ speaker',860,1100,300,2]
+  ]},
+ {id:'last',no:'#04',en:'Last Stop',alias:'The Sandstorm Tavern',kicker:'Case 04 · narrative game',ox:1990,oy:1440,
+  date:'Sep 2025 – Nov 2025',role:'Narrative and game design',tools:'Unreal Engine, Blender, Figma, Premiere',
+  text:'A sandstorm traps strangers in a roadside tavern on a desert highway. Everyone has a story, and everyone has a motive. Through branching dialogue and choices, the player must decide who to trust under pressure, and learns how fragile trust becomes when there is no way out.',
+  items:[
+   ['t','LAST STOP','#04 · nobody leaves until the storm does',30,10],
+   ['n','type','<b>Case summary</b><br>Location: a tavern, mid-sandstorm.<br>Suspects: everyone.<br>Motive: survival.',920,10,420,-2],
+   ['p','last_hero',30,190,600,-2,'','pin'],
+   ['p','last_g1',680,250,300,3,'','tape'],
+   ['p','last_g2',1010,240,300,-2,'','pin'],
+   ['p','last_g3',680,470,300,-1,'','pin'],
+   ['p','last_g4',1010,470,300,2,'endings','tape'],
+   ['p','last_chars',30,540,520,1,'Tom, Eli, June, Mariah','pin'],
+   ['p','last_mind',590,720,380,-3,'mind map: trust vs. morality','tape'],
+   ['p','last_story',30,890,560,2,'','pin'],
+   ['p','last_ue',1010,720,300,3,'Unreal blueprints','pin'],
+   ['h','REFERENCES',1420,440],
+   ['p','last_hateful',1390,520,260,-3,'The Hateful Eight','pin','ref'],
+   ['p','last_django',1670,510,260,3,'Django Unchained','tape','ref'],
+   ['p','last_rdr',1400,740,260,2,'Red Dead Redemption','tape','ref'],
+   ['p','last_mood',1710,760,180,-3,'mood board','pin','ref'],
+   ['p','last_wd',1380,960,320,-1,'The Walking Dead','pin','ref'],
+   ['n','sticky','4 suspects.<br>1 gun.<br>Who do you trust?',460,420,210,5],
+   ['n','hand','Not combat.<br>Relationships and<br>hard choices.',1050,900,260,-3],
+   ['n','scrap','Every choice changes<br>who survives',640,1040,270,3],
+   ['s','UNSOLVED',1600,1150]
+  ]}
+];
+
+/* ---------- build ---------- */
+const wall=document.getElementById('wall'), svg=document.getElementById('strings');
+const pins={};
+// seeded random so the mess is the same on every visit
+let seed=7; function rnd(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}
+const R=(a,b)=>a+rnd()*(b-a);
+function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e}
+function put(e,x,y,w,r,z){e.style.left=x+'px';e.style.top=y+'px';if(w)e.style.width=w+'px';e.style.transform=`rotate(${r||0}deg)`;if(z)e.style.zIndex=z;return e}
+const EXTRA={
+ paw:{clues:['Why do owners<br>wait so long?','Itchy ≠ “fine”','Check the ears!'],scrib:['?','!!','LOOK CLOSER']},
+ dream:{clues:['Same door<br>every time?','Is she awake<br>yet?','Water = fear'],scrib:['?','LOOP','WAKE UP']},
+ soft:{clues:['Presence,<br>not productivity','Soft. Small.<br>Not too human.','2 a.m. again'],scrib:['?','!!','LONELY?']},
+ last:{clues:['Who lied<br>first?','Check the<br>basement','Eli was<br>too quiet'],scrib:['?','LIAR?','WHO?']}
+};
+const groups={},shades={};
+CASES.forEach(c=>{
+  const g=el('div','case');groups[c.id]=g;
+  c.items.forEach(it=>{
+    const k=it[0];
+    if(k==='t'){g.append(put(el('div','title-strip',`${it[1]}<small>${it[2]}</small>`),c.ox+it[3]+R(-20,20),c.oy+it[4],0,R(-3,2)))}
+    if(k==='h'){g.append(put(el('div','ref-head',it[1]),c.ox+it[2],c.oy+it[3],0,R(-7,2)))}
+    if(k==='s'){g.append(put(el('div','stamp',it[1]),c.ox+it[2],c.oy+it[3],0,R(-18,-8),30))}
+    if(k==='n'&&it[1]!=='scrap'){g.append(put(el('div','item note '+it[1],it[2]),c.ox+it[3]+R(-40,40),c.oy+it[4]+R(-30,30),it[5],it[6]*1.6+R(-4,4),Math.floor(R(12,24))))}
+    if(k==='p'){const [_,key,x,y,w,r,cap,fix,ref]=it;
+      const f=put(el('figure','item photo'+(ref?' ref':'')),c.ox+x+R(-45,45),c.oy+y+R(-35,35),w*R(.95,1.08),r*2+R(-4,4),Math.floor(R(1,12)));
+      f.style.margin=0;
+      f.innerHTML=`<div class="${fix}"></div><img alt="${cap||c.en}" src="${IMG[key]}" decoding="async">${cap?`<figcaption>${cap}</figcaption>`:''}`;
+      f.dataset.key=key;g.append(f);pins[key]=f;
+    }
+  });
+  // extra clutter
+  const ex=EXTRA[c.id];
+  ex.clues.slice(0,1).forEach(t=>g.append(put(el('div','item note '+(rnd()<.5?'sticky':'scrap'),t),c.ox+R(100,1700),c.oy+R(250,1150),R(170,220),R(-12,12),Math.floor(R(14,26)))));
+  wall.append(g);
+  const sh=put(el('div','shade'),c.ox-40,c.oy-20,2020,1360);shades[c.id]=sh;wall.append(sh);
+});
+// red rings drawn around a few photos
+[].forEach(k=>{
+  const f=pins[k];const r=el('div','ring');
+  requestAnimationFrame(()=>{put(r,f.offsetLeft-30,f.offsetTop-25,f.offsetWidth+60,R(-8,8),29);r.style.height=(f.offsetHeight+50)+'px'});
+  f.parentNode.append(r)});
+// detective file in the middle
+const det=put(el('div','item note type',`<b>Detective file</b><br>Name: Yuyue Liu<br>Now: MFA Interaction Design, SVA, New York<br>Before: Digital Media Arts, Shanghai University<br>Into: music, dreams, nature, film, mysteries<br><br>Pattern noted: in every case,<br>someone is trapped, or someone is alone.`),1480,1120,470,-3,60);
+det.id='detective';det.innerHTML+='<div class="pin"></div>';wall.append(det);pins.detective=det;
+const ct=put(el('div','item note sticky','Contact<br><a href="mailto:liuyuyue73@gmail.com" target="_blank" rel="noopener">liuyuyue73@gmail.com</a><br>Behance: Liu Yuyue'),1640,1530,320,5,60);ct.id='contact';wall.append(ct);
+function circle(elm,pad,rot){requestAnimationFrame(()=>{const r=put(el('div','ring big'),elm.offsetLeft-pad,elm.offsetTop-pad*.8,elm.offsetWidth+pad*2,rot);r.style.height=(elm.offsetHeight+pad*1.6)+'px';wall.append(r)})}
+circle(det,70,-4);circle(ct,55,6);
+wall.append(put(el('div','scribble','WHO IS THIS?'),1540,1030,0,-6,47));
+// clutter along the seams so the cases bleed into each other
+[['Same<br>person?',1950,700,8],['Trapped =<br>alone?',2450,1300,10]].forEach(([t,x,y,r],i)=>
+  wall.append(put(el('div','item note '+(i%2?'scrap':'sticky'),t),x,y,190,r,47)));
+[].forEach(([t,x,y])=>wall.append(put(el('div','scribble',t),x,y,0,R(-20,20),47)));
+
+
+function pinPos(key){const e=pins[key];return [e.offsetLeft+e.offsetWidth/2, e.offsetTop+4]}
+const LINKS=[
+ ['detective','paw_hero','CARE'],['detective','dream_hero','DREAMS'],['detective','soft_hero','ALONE'],['detective','last_hero','TRUST'],
+ ['dream_corridor','last_story','TRAPPED'],['soft_timeline','dream_board','AT NIGHT'],['paw_doctor','soft_poses','COMPANIONSHIP'],
+ ['paw_hero','paw_hist',''],['paw_survey','paw_persona',''],['paw_doctor','paw_brand',''],['paw_ai','paw_dataset',''],['paw_wire','paw_ia',''],
+ ['dream_hero','dream_inception',''],['dream_board','dream_keys',''],['dream_spiral','dream_corridor',''],['dream_room','dream_paprika',''],['dream_twist','dream_research',''],
+ ['soft_hero','soft_klara',''],['soft_poses','soft_board',''],['soft_ui','soft_animism',''],['soft_story','soft_case',''],['soft_lofi','soft_timeline',''],
+ ['last_hero','last_hateful',''],['last_chars','last_mind',''],['last_g2','last_mood',''],['last_story','last_wd',''],['last_g1','last_django',''],['last_g3','last_ue',''],['last_chars','last_rdr','']
+];
+function drawStrings(){
+  let s='',labels='';
+  const box=e=>{const g=e.offsetParent===wall||!e.offsetParent?{x:0,y:0}:{x:0,y:0};return {l:e.offsetLeft-20,t:e.offsetTop-10,r:e.offsetLeft+e.offsetWidth+20,b:e.offsetTop+e.offsetHeight+10}};
+  const avoid=[...wall.querySelectorAll('.title-strip,.ref-head,#detective,#contact,.stamp')].map(box);
+  LINKS.forEach(([a,b,t])=>{const [x1,y1]=pinPos(a),[x2,y2]=pinPos(b);
+    const mx=(x1+x2)/2,my=(y1+y2)/2+Math.hypot(x2-x1,y2-y1)*.05;const d=`M${x1},${y1} Q${mx},${my+20} ${x2},${y2}`;
+    s+=`<path class="sh" d="M${x1+3},${y1+6} Q${mx+3},${my+26} ${x2+3},${y2+6}"/><path d="${d}"/>`;
+    if(t){ // place the label where it doesn't sit on top of a title or a card
+      const cx=mx,cy=my+20,P=u=>[(1-u)*(1-u)*x1+2*(1-u)*u*cx+u*u*x2,(1-u)*(1-u)*y1+2*(1-u)*u*cy+u*u*y2];
+      const w=t.length*19+24,h=44;let best=null;
+      for(const u of [.5,.4,.6,.3,.7,.22,.78,.15,.85]){const [px,py]=P(u);const r={l:px-w/2,t:py-h/2,r:px+w/2,b:py+h/2};
+        const hit=avoid.some(a=>r.l<a.r&&r.r>a.l&&r.t<a.b&&r.b>a.t);if(!hit){best=[px,py];break}if(!best)best=[px,py]}
+      labels+=`<g transform="translate(${best[0].toFixed(0)},${best[1].toFixed(0)})"><rect x="${-w/2}" y="${-h/2+2}" width="${w}" height="${h-6}" rx="4" fill="rgba(20,30,28,.82)"/><text x="0" y="11" text-anchor="middle">${t}</text></g>`}});
+  svg.innerHTML=s+labels;
+}
+let pending=wall.querySelectorAll('img').length;
+wall.querySelectorAll('img').forEach(i=>{if(i.complete){if(--pending===0)drawStrings()}else i.onload=()=>{if(--pending===0)drawStrings()}});
+drawStrings();
+
+/* ---------- camera: springs instead of keyframes ---------- */
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let current=-1;
+const isNarrow=()=>innerWidth<=820;
+function vcx(){ if(isNarrow())return innerWidth/2; return current<0?(330+innerWidth)/2:(330+innerWidth-200)/2 }
+function vcy(){ return isNarrow()?innerHeight*.45:innerHeight/2+20 }
+function availW(){ return isNarrow()?innerWidth:innerWidth-(current<0?360:540) }
+function fitAll(){ return Math.min(availW()/4200,(innerHeight-60)/2950) }
+function fitCase(){ return Math.min(availW()/2000,(innerHeight-90)/1330) }
+
+// position + zoom (zoom kept in log space so zooming feels even)
+const cam={x:2000,y:1300,z:Math.log(.6),vx:0,vy:0,vz:0};
+const tgt={x:2000,y:1300,z:Math.log(.6)};
+// the bump: an underdamped spring that is kicked and then rings out
+const bump={x:0,y:0,r:0,vx:0,vy:0,vr:0};
+const K=16, C=2*Math.sqrt(K)*1.0;        // camera: critically damped glide
+const BK=320, BC=11;                       // bump: quick, soft wobble
+function moveTo(x,y,s){
+  tgt.x=x;tgt.y=y;tgt.z=Math.log(s);
+  if(reduce){cam.x=x;cam.y=y;cam.z=tgt.z;return}
+  const dx=x-cam.x,dy=y-cam.y,d=Math.hypot(dx,dy)||1;
+  bump.vx+=-dx/d*260+R(-60,60); bump.vy+=-dy/d*260+R(-60,60); bump.vr+=R(-14,14);
+}
+let last=performance.now();
+function frame(now){
+  const dt=Math.min(.033,(now-last)/1000);last=now;
+  if(!dragging){
+    const ax=K*(tgt.x-cam.x)-C*cam.vx, ay=K*(tgt.y-cam.y)-C*cam.vy, az=K*(tgt.z-cam.z)-C*cam.vz;
+    cam.vx+=ax*dt;cam.vy+=ay*dt;cam.vz+=az*dt;cam.x+=cam.vx*dt;cam.y+=cam.vy*dt;cam.z+=cam.vz*dt;
+  }
+  bump.vx+=(-BK*bump.x-BC*bump.vx)*dt;bump.vy+=(-BK*bump.y-BC*bump.vy)*dt;bump.vr+=(-BK*bump.r-BC*bump.vr)*dt;
+  bump.x+=bump.vx*dt;bump.y+=bump.vy*dt;bump.r+=bump.vr*dt;
+  // pull out slightly while travelling fast, like re-framing
+  const speed=Math.hypot(cam.vx,cam.vy);
+  const s=Math.exp(cam.z)*(1-Math.min(.07,speed*.00004));
+  let ox=bump.x,oy=bump.y,rot=bump.r*.06;
+  if(!reduce){ox+=Math.sin(now/1700)*5+Math.sin(now/3100)*4;oy+=Math.cos(now/2100)*4+Math.sin(now/3700)*3;rot+=Math.sin(now/2900)*.12}
+  const tx=vcx()-cam.x*s+ox, ty=vcy()-cam.y*s+oy;
+  wall.style.transform=`translate3d(${tx.toFixed(2)}px,${ty.toFixed(2)}px,0) rotate(${rot.toFixed(3)}deg) scale(${s.toFixed(4)})`;
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* ---------- drag, zoom, inspect ---------- */
+const stage=document.getElementById('stage');let drag=null,moved=false,dragging=false;
+stage.addEventListener('pointerdown',e=>{if(!started)return;drag={x:e.clientX,y:e.clientY,cx:cam.x,cy:cam.y};moved=false;stage.setPointerCapture(e.pointerId)});
+stage.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+  if(Math.hypot(dx,dy)>4){moved=true;dragging=true;stage.classList.add('dragging')}
+  if(moved){const s=Math.exp(cam.z);cam.x=tgt.x=drag.cx-dx/s;cam.y=tgt.y=drag.cy-dy/s;cam.vx=cam.vy=0}});
+stage.addEventListener('pointerup',e=>{stage.classList.remove('dragging');dragging=false;
+  if(drag&&!moved){const f=e.target.closest('.photo');if(f){const cx=f.offsetLeft+f.offsetWidth/2,cy=f.offsetTop+f.offsetHeight/2;
+    moveTo(cx,cy,Math.min(1.6,availW()*.8/f.offsetWidth,(innerHeight*.75)/f.offsetHeight))}}
+  drag=null});
+stage.addEventListener('wheel',e=>{if(!started)return;e.preventDefault();
+  const s=Math.exp(cam.z),ns=Math.max(.15,Math.min(2,s*Math.exp(-e.deltaY*.0015)));
+  const wx=cam.x+(e.clientX-vcx())/s, wy=cam.y+(e.clientY-vcy())/s;
+  cam.x=tgt.x=wx-(e.clientX-vcx())/ns;cam.y=tgt.y=wy-(e.clientY-vcy())/ns;cam.z=tgt.z=Math.log(ns);cam.vx=cam.vy=cam.vz=0},{passive:false});
+
+/* ---------- UI ---------- */
+const list=document.getElementById('caseList'),card=document.getElementById('card');let started=false;
+CASES.forEach((c,i)=>{const b=el('button','case-btn',`<span class="no">${c.no}</span><span><span class="en">${c.en}</span><span class="alias">${c.alias}</span></span>`);b.onclick=()=>select(i);list.append(b)});
+function select(i){
+  current=i;const c=CASES[i];
+  [...list.children].forEach((b,j)=>b.setAttribute('aria-current',j===i));
+  Object.entries(shades).forEach(([id,s])=>s.classList.toggle('on',id!==c.id));Object.entries(groups).forEach(([id,g])=>g.classList.toggle('active',id===c.id));
+  card.innerHTML=`<div class="kicker">${c.kicker}</div><h3>${c.en}</h3><div class="alias">${c.alias}</div>
+   <dl><dt>Filed</dt><dd>${c.date}</dd><dt>Role</dt><dd>${c.role}</dd><dt>Tools</dt><dd>${c.tools}</dd></dl>
+   <p>${c.text}</p><button class="open-btn" id="openFile">Open the full file</button>`;
+  card.classList.remove('hidden');document.getElementById('openFile').onclick=()=>openDossier(c);
+  moveTo(c.ox+990,c.oy+650,fitCase());
+}
+function overview(){current=-1;[...list.children].forEach(b=>b.setAttribute('aria-current',false));
+  Object.values(shades).forEach(s=>s.classList.remove('on'));Object.values(groups).forEach(g=>g.classList.remove('active'));card.classList.add('hidden');moveTo(W/2,H/2,fitAll())}
+const PAGE_BG={"pg00": "#030303", "pg01": "#fdf5e1", "pg02": "#fef9e8", "pg03": "#fdf8e9", "pg04": "#fff8e8", "pg05": "#fffcf7", "pg06": "#fff7ea", "pg07": "#fff4e8", "pg08": "#ffecc4", "pg09": "#fff4df", "pg10": "#313d45", "pg11": "#2c3c4b", "pg12": "#203052", "pg13": "#1e2841", "pg14": "#4b4541", "pg15": "#556982", "pg16": "#f6e6d6", "pg17": "#fce9e2", "pg18": "#ccdfea", "pg19": "#fdf0f2", "pg20": "#fef4f2", "pg21": "#fef4f2", "pg22": "#fcf3f1", "pg23": "#fceee2", "pg24": "#fdf0ec", "pg25": "#5b2a2b", "pg26": "#69292d", "pg27": "#c9c5c6", "pg28": "#c9c4c6", "pg29": "#cac5c8", "pg30": "#cbc6c8", "pg31": "#ccc6c8"};
+const CASE_PAGES={paw:[1,9],dream:[10,15],soft:[16,24],last:[25,31]};
+const ROT=0;
+function openDossier(c){
+  const [a,b]=CASE_PAGES[c.id];const pages=[];for(let i=a;i<=b;i++)pages.push('pg'+String(i).padStart(2,'0'));
+  const n=pages.length, hero=c.items.find(i=>i[0]==='p')[1];
+  const d=document.getElementById('dossier');
+  d.innerHTML=`<button class="closeD" id="closeD">Close ✕</button><div id="desk"></div>
+   <div class="bookhint"><button id="prevP" aria-label="Previous sheet">← Prev</button><span id="pinfo"></span><button id="nextP" aria-label="Pull out the next sheet">Next →</button></div>`;
+  const desk=document.getElementById('desk');
+  const back=el('div','fold fold-back cover');
+  back.innerHTML=`<div class="skin"></div><div class="tab">CASE ${c.no}</div>`;
+  const front=el('div','fold fold-front cover');
+  front.innerHTML=`<div class="skin"><div class="crease"></div><div class="ring"></div></div>
+    <div class="form"><div class="tp"></div><div class="hdr">CASE FILE · DO NOT REMOVE</div>
+      <div class="row"><span>Title</span><span class="t">${c.en}</span></div>
+      <div class="row"><span>Alias</span><span class="a">${c.alias}</span></div>
+      <div class="row"><span>Filed</span><span>${c.date}</span></div>
+      <div class="row"><span>Status</span><span>${c.id==='last'?'Unsolved':'Open'}</span></div></div>
+    <figure class="polaroid" style="margin:0"><div class="pin"></div><img alt="" src="${IMG[hero]}"></figure>
+    <div class="cvstamp">${c.id==='last'?'UNSOLVED':'CONFIDENTIAL'}</div>
+    <div class="flag">pull out →</div>`;
+  desk.append(back);
+  // seeded mess for each sheet
+  let sd=c.no.charCodeAt(2)*97+7;const rr=()=>{sd=(sd*9301+49297)%233280;return sd/233280};
+  const mess=pages.map(()=>({r:(rr()-.5)*2*ROT, pr:(rr()-.5)*9, px:(rr()-.5)*0.10, py:(rr()-.5)*0.10}));
+  const sheets=pages.map((k,i)=>{const s=el('div','sheet');s.style.background=PAGE_BG[k]||'#f4efe3';
+    s.innerHTML=`<img alt="${c.en}, sheet ${i+1}" src="${IMG[k]}" decoding="async"><div class="ex">EXHIBIT ${c.no}-${String(i+1).padStart(2,'0')}</div>${i===0?'<div class="clipx"></div>':''}`;
+    s.onclick=e=>{e.stopPropagation(); if(i===cur) next(); else if(i<cur) prev(); else next()};
+    desk.append(s);return s});
+  desk.append(front);
+  back.onclick=front.onclick=e=>{e.stopPropagation();next()};
+
+  let opened=false,cur=-1,G;
+  function geo(){const vw=innerWidth,vh=innerHeight;
+    const topM=vw<=820?52:58,botM=vw<=820?14:22,sideM=vw<=820?10:22;
+    const th=ROT*Math.PI/180,cs=Math.cos(th),sn=Math.sin(th),aw=vw-2*sideM,ah=vh-topM-botM;
+    const W=Math.min(aw/(cs+sn/1.99),ah/(sn+cs/1.99)),H=W/1.99;
+    const Fc=Math.min(660,vw*.86,(vh*.72)/.82), k=opened?Math.min(500,vw*.72)/Fc:1;
+    const F=Fc*k,FH=F*.82;
+    const fcy=opened? vh-FH*.16+FH/2 : vh/2+24;
+    G={vw,vh,W,H,F,FH,Fc,k,fx:vw/2,fy:fcy,cy:topM+(vh-topM-botM)/2,topM,botM,sideM,s:F*.86/W}}
+  const T=(x,y,r,sc)=>`translate(${x}px,${y}px) rotate(${r}deg) scale(${sc})`;
+  function backT(){return `translate(${G.fx-G.F/2}px,${G.fy-G.FH/2}px) scale(${G.k})`}
+  function frontT(){return `translate(${G.fx-G.F/2}px,${G.fy-G.FH/2+G.FH*.06}px) scale(${G.k})`}
+  const frontTop=()=>G.fy-G.FH/2+G.FH*.06;
+  function stateT(i,st){const {W,H,s}=G;
+    if(st==='in') return T(G.fx-W/2, frontTop()-14+s*H/2-H/2, 0, s);
+    if(st==='lift') return T(G.fx-W/2, frontTop()-s*H*.62-H/2, -2, s*1.05);
+    if(st==='out') return T(G.vw/2-W/2, G.cy-H/2, mess[i].r, 1);
+    if(st==='pile'){ // keep every piled sheet fully on screen
+      const r=mess[i].pr,t=Math.abs(r)*Math.PI/180,c2=Math.cos(t),s2=Math.sin(t);
+      const aw=G.vw-2*G.sideM, ah=G.vh-G.topM-G.botM;
+      const sc=Math.min(.94, aw/(W*c2+H*s2), ah/(W*s2+H*c2));
+      const hw=sc*(W*c2+H*s2)/2, hh=sc*(W*s2+H*c2)/2;
+      const cx=Math.max(G.sideM+hw,Math.min(G.vw-G.sideM-hw,G.vw/2+mess[i].px*G.vw));
+      const cy=Math.max(G.topM+hh,Math.min(G.vh-G.botM-hh,G.cy+mess[i].py*G.vh));
+      return T(cx-W/2, cy-H/2, r, sc)}}
+  function size(){back.style.width=front.style.width=G.Fc+'px';back.style.height=G.Fc*.82+'px';front.style.height=G.Fc*.82*.94+'px';
+    sheets.forEach(s=>{s.style.width=G.W+'px';s.style.height=G.H+'px'})}
+  function go(elm,t,dur,ease='cubic-bezier(.2,.7,.2,1)'){elm.style.transition=dur?`transform ${dur}ms ${ease}`:'none';elm.style.transform=t}
+  const timers=[];const later=(f,ms)=>timers.push(setTimeout(f,ms));
+  function layout(dur){geo();size();go(back,backT(),dur);go(front,frontT(),dur);
+    sheets.forEach((s,i)=>{const st=i<cur?'pile':i===cur?'out':'in';
+      s.style.zIndex=st==='out'?300:st==='pile'?200+i:10+(n-i);s.classList.toggle('piled',st==='pile');go(s,stateT(i,st),dur)});
+    back.style.zIndex=1;front.style.zIndex=100;front.classList.toggle('opened',opened);back.classList.toggle('opened',opened)}
+  function pullOut(i){const s=sheets[i];s.style.zIndex=10+(n-i);s.classList.remove('piled');
+    go(s,stateT(i,'lift'),380,'cubic-bezier(.3,0,.4,1)');
+    later(()=>{s.style.zIndex=300;go(s,stateT(i,'out'),700)},380)}
+  function putIn(i){const s=sheets[i];s.style.zIndex=300;
+    go(s,stateT(i,'lift'),450,'cubic-bezier(.4,0,.6,1)');
+    later(()=>{s.style.zIndex=10+(n-i);go(s,stateT(i,'in'),380,'cubic-bezier(.3,0,.2,1)')},450)}
+  function toPile(i){const s=sheets[i];s.style.zIndex=200+i;s.classList.add('piled');go(s,stateT(i,'pile'),650)}
+  function fromPile(i){const s=sheets[i];s.style.zIndex=301;s.classList.remove('piled');go(s,stateT(i,'out'),650)}
+  function update(){const nb=document.getElementById('nextP'),pb=document.getElementById('prevP'),info=document.getElementById('pinfo');
+    pb.disabled=cur<0;nb.disabled=false;
+    nb.textContent=cur<0?'Open →':cur===n-1?'Put back':'Next →';
+    info.textContent=cur<0?'':`${String(cur+1).padStart(2,'0')} / ${String(n).padStart(2,'0')}`}
+  function next(){
+    if(!opened){opened=true;layout(700);cur=0;later(()=>pullOut(0),560);update();return}
+    if(cur<n-1){toPile(cur);cur++;pullOut(cur);update();return}
+    // end: gather everything back into the folder
+    for(let i=n-1;i>=0;i--){const k=n-1-i;later(()=>{sheets[i].classList.remove('piled');putIn(i)},k*110)}
+    later(()=>{cur=-1;opened=false;layout(700);update()},n*110+900);
+  }
+  function prev(){
+    if(cur<0)return;
+    putIn(cur);
+    if(cur>0){cur--;fromPile(cur)} else {cur=-1;later(()=>{opened=false;layout(700)},850)}
+    update()}
+  dossierTurn=dir=>dir>0?next():prev();
+  document.getElementById('prevP').onclick=prev;document.getElementById('nextP').onclick=next;
+  desk.onclick=e=>{if(e.target===desk)closeDossier()};document.getElementById('closeD').onclick=closeDossier;
+  dossierResize=()=>layout(0);
+  layout(0);update();d.classList.remove('hidden');document.getElementById('nextP').focus();
+}
+let dossierTurn=null,dossierResize=null;
+addEventListener('resize',()=>{if(dossierResize&&!document.getElementById('dossier').classList.contains('hidden'))dossierResize()});
+function closeDossier(){document.getElementById('dossier').classList.add('hidden');dossierTurn=null;dossierResize=null}
+function enterWall(){started=true;document.getElementById('start').classList.add('hidden');['mast','index','hint'].forEach(id=>document.getElementById(id).classList.remove('hidden'));overview()}
+document.getElementById('goCases').onclick=()=>{enterWall();setTimeout(()=>select(0),1200)};
+document.getElementById('goWall').onclick=()=>enterWall();
+document.getElementById('goAbout').onclick=()=>{enterWall();setTimeout(()=>{const d=pins.detective;moveTo(d.offsetLeft+d.offsetWidth/2+60,d.offsetTop+340,Math.min(1,(innerHeight-120)/900,availW()/850));tip.classList.remove('hidden')},400)};
+const tip=document.getElementById('tip');
+const goContactOld=()=>{enterWall();setTimeout(()=>{const c=document.getElementById('contact');
+  moveTo(c.offsetLeft+c.offsetWidth/2,c.offsetTop+c.offsetHeight/2,Math.min(1.2,(innerHeight-160)/500,availW()/700));tip.classList.remove('hidden')},400)};
+document.getElementById('tipClose').onclick=()=>tip.classList.add('hidden');
+document.getElementById('copyMail').onclick=async()=>{const m='liuyuyue73@gmail.com',out=document.getElementById('copied');
+  try{await navigator.clipboard.writeText(m);out.textContent='Copied. Talk soon.'}
+  catch(e){const t=document.createElement('textarea');t.value=m;document.body.append(t);t.select();
+    let ok=false;try{ok=document.execCommand('copy')}catch(_){};t.remove();out.textContent=ok?'Copied. Talk soon.':'Select the address above to copy it.'}};
+function goHome(){started=false;current=-1;tip.classList.add('hidden');document.getElementById('dossier').classList.add('hidden');
+  ['mast','index','hint','card'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  Object.values(shades).forEach(s=>s.classList.remove('on'));Object.values(groups).forEach(g=>g.classList.remove('active'));
+  document.getElementById('start').classList.remove('hidden');moveTo(2000,1300,Math.max(.5,fitAll()*2.2));
+  setTimeout(()=>document.getElementById('goCases').focus(),300)}
+document.getElementById('homeBtn').onclick=goHome;
+document.getElementById('mast').style.cursor='pointer';document.getElementById('mast').onclick=goHome;
+document.getElementById('overviewBtn').onclick=overview;
+addEventListener('keydown',e=>{const d=document.getElementById('dossier');
+  if(!d.classList.contains('hidden')&&dossierTurn){if(e.key==='ArrowRight'){dossierTurn(1);return}if(e.key==='ArrowLeft'){dossierTurn(-1);return}}
+  if(e.key==='Escape'){if(!d.classList.contains('hidden'))closeDossier();else if(!tip.classList.contains('hidden'))tip.classList.add('hidden');else if(started&&current>=0)overview();else if(started)goHome()}
+  if(started&&d.classList.contains('hidden')){
+    if(e.key==='ArrowDown'){e.preventDefault();select((current+1)%CASES.length)}
+    if(e.key==='ArrowUp'){e.preventDefault();select((current-1+CASES.length)%CASES.length)}}});
+addEventListener('resize',()=>{const s=current>=0?fitCase():fitAll();tgt.z=Math.log(s)});
+cam.z=tgt.z=Math.log(Math.max(.5,fitAll()*2.2));
+
+/* ---------- list view ---------- */
+const BLURB={paw:'An AI tool that helps dog owners catch skin disease early, from a photo to a vet visit.',
+ dream:'A 3D short film about a dream that loops: elevator, hallway, elevator, and no way out.',
+ soft:'A soft AI companion, app and plush toy, for people who feel most alone late at night.',
+ last:'A narrative game set in a desert tavern where strangers must decide who to trust.'};
+const rows=document.getElementById('rows'),listEl=document.getElementById('list');
+CASES.forEach(c=>{const hero=c.items.find(i=>i[0]==='p')[1];
+  const b=el('button','lrow',`<img alt="" src="${IMG[hero]}" loading="lazy"><div><div class="no">${c.no}</div><div class="nm">${c.en}</div><div class="al">${c.alias}</div><div class="ds">${BLURB[c.id]}</div></div>
+   <div class="meta">${c.date}<b>View file →</b></div>`);
+  b.onclick=()=>openDossier(c);rows.append(b)});
+function openList(){listEl.classList.remove('hidden');listEl.scrollTop=0;setTimeout(()=>rows.firstChild.focus(),50)}
+function closeList(){listEl.classList.add('hidden')}
+document.getElementById('goList').onclick=openList;
+document.getElementById('listBtn').onclick=openList;
+document.getElementById('listClose').onclick=closeList;
+addEventListener('keydown',e=>{
+  if(listEl.classList.contains('hidden')||!document.getElementById('dossier').classList.contains('hidden'))return;
+  if(e.key==='Escape'){closeList();e.stopImmediatePropagation();e.preventDefault()}
+  else if(['ArrowUp','ArrowDown'].includes(e.key)){e.stopImmediatePropagation()}
+},true);
+
+/* ---------- long page: scroll drives the wall ---------- */
+const work=document.getElementById('work'),N=CASES.length;
+function sizeWork(){work.style.height=((N+2)*innerHeight)+'px'}
+sizeWork();
+const segY=s=>work.offsetTop+(s+1+.5)/(N+1)*(work.offsetHeight-innerHeight);
+let mode='',seg=-9;
+function heroCam(){current=-1;Object.values(shades).forEach(s=>s.classList.remove('on'));Object.values(groups).forEach(g=>g.classList.remove('active'));
+  [...list.children].forEach(b=>b.setAttribute('aria-current',false));card.classList.add('hidden');moveTo(2000,1300,Math.max(.5,fitAll()*2.2))}
+function onScroll(){
+  const y=scrollY,top=work.offsetTop,h=work.offsetHeight,vh=innerHeight;
+  const m=y<top-vh*.4?'hero':(y>top+h-vh*.97?'after':'work');
+  if(m!==mode){mode=m;const show=m==='work';
+    ['mast','index','hint'].forEach(id=>document.getElementById(id).classList.toggle('hidden',!show));
+    if(!show)card.classList.add('hidden');
+    if(m==='hero'){seg=-9;heroCam()}
+    if(m==='work')seg=-9;}
+  if(m==='work'){const p=Math.min(.9999,Math.max(0,(y-top)/(h-vh)));const s=Math.floor(p*(N+1))-1;
+    if(s!==seg){seg=s;s<0?overview():select(s)}}
+}
+addEventListener('scroll',onScroll,{passive:true});
+addEventListener('resize',()=>{sizeWork();mode='';onScroll()});
+const go=y=>scrollTo({top:y,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+[...list.children].forEach((b,i)=>b.onclick=()=>go(segY(i)));
+document.querySelectorAll('[data-go]').forEach(a=>a.onclick=e=>{e.preventDefault();const t=document.getElementById(a.dataset.go);go(a.dataset.go==='work'?segY(-1):t.offsetTop)});
+document.getElementById('homeBtn').textContent='Back to top';document.getElementById('homeBtn').onclick=()=>go(0);
+document.getElementById('listBtn').style.display='none';
+document.getElementById('mast').onclick=()=>go(0);
+// lock page scroll while a file is open
+const _open=openDossier;openDossier=function(c){_open(c);document.body.classList.add('lock')};
+const _close=closeDossier;closeDossier=function(){_close();document.body.classList.remove('lock')};
+// arrow keys step through cases while on the wall
+addEventListener('keydown',e=>{
+  if(!document.getElementById('dossier').classList.contains('hidden')||mode!=='work')return;
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();e.stopImmediatePropagation();
+    const s=Math.max(-1,Math.min(N-1,seg+(e.key==='ArrowDown'?1:-1)));go(segY(s))}
+},true);
+document.getElementById('copyMail2').onclick=async()=>{const m='liuyuyue73@gmail.com',out=document.getElementById('copied2');
+  try{await navigator.clipboard.writeText(m);out.textContent='Copied.'}
+  catch(e){const t=document.createElement('textarea');t.value=m;document.body.append(t);t.select();let ok=false;try{ok=document.execCommand('copy')}catch(_){};t.remove();out.textContent=ok?'Copied.':'Select the address to copy it.'}};
+onScroll();
+
+/* ---------- wheel / trackpad turns sheets inside an open file ---------- */
+(()=>{const d=document.getElementById('dossier');let acc=0,lock=0,idle;
+ d.addEventListener('wheel',e=>{
+   if(d.classList.contains('hidden')||!dossierTurn)return;
+   e.preventDefault();
+   const now=performance.now();
+   clearTimeout(idle);idle=setTimeout(()=>{acc=0},300);
+   if(now<lock)return;
+   acc+=Math.abs(e.deltaY)>=Math.abs(e.deltaX)?e.deltaY:e.deltaX;
+   if(Math.abs(acc)>=60){dossierTurn(acc>0?1:-1);acc=0;lock=now+650}
+ },{passive:false});
+})();
+
+/* ---------- reveal on scroll ---------- */
+(()=>{const groups=new Map();
+ document.querySelectorAll('.rv').forEach(el=>{const sec=el.closest('section');if(!groups.has(sec))groups.set(sec,[]);const g=groups.get(sec);el.style.transitionDelay=(g.length*0.12)+'s';g.push(el)});
+ const io=new IntersectionObserver(es=>es.forEach(e=>{(groups.get(e.target)||[]).forEach(el=>el.classList.toggle('in',e.isIntersecting))}),{threshold:.18});
+ groups.forEach((_,sec)=>io.observe(sec));
+ const chapter=document.getElementById('chapter');
+ const tick=()=>{chapter.classList.toggle('on',mode==='work'&&seg===-1)};
+ addEventListener('scroll',tick,{passive:true});tick();
+})();
+</script>
+</body>
+</html>
