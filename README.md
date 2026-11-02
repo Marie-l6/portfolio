@@ -2,7 +2,7 @@
 
 Interaction design portfolio, presented as a detective's evidence wall.
 
-Live site: https://marie-6.github.io/portfolio/
+Live site: https://marie-l6.github.io/portfolio/.
 
 ## Structure
 - `index.html` — the whole site in one file (styles and scripts inline)
